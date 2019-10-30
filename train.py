@@ -10,6 +10,7 @@ import torch.distributed as dist
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data import DataLoader
 
+import gradient_adaptive_factor
 from model import Tacotron2
 from data_utils import TextMelLoader, TextMelCollate
 from loss_function import Tacotron2Loss
@@ -221,10 +222,18 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
                 ctc_text, ctc_text_lengths, aco_lengths = x[-2], x[-1], x[4]
                 taco_loss = loss
                 mi_loss = model.mi(decoder_outputs, ctc_text, aco_lengths, ctc_text_lengths)
-                loss = loss + mi_loss
+                if getattr(hparams, 'use_gaf', True):
+                    if i % gradient_adaptive_factor.UPDATE_GAF_EVERY_N_STEP == 0:
+                        safe_loss = 0. * sum([x.sum() for x in model.parameters()])
+                        gaf = gradient_adaptive_factor.calc_grad_adapt_factor(
+                            taco_loss + safe_loss, mi_loss + safe_loss, model.parameters(), optimizer)
+                else:
+                    gaf = 1.0
+                loss = loss + gaf * mi_loss
             else:
                 taco_loss = loss
                 mi_loss = torch.tensor([-1.0])
+                gaf = -1.0
             if hparams.distributed_run:
                 reduced_loss = reduce_tensor(loss.data, n_gpus).item()
                 taco_loss = reduce_tensor(taco_loss.data, n_gpus).item()
@@ -251,8 +260,9 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
 
             if not is_overflow and rank == 0:
                 duration = time.perf_counter() - start
-                print("Train loss {} {:.6f} mi_loss {:.4f} Grad Norm {:.6f} {:.2f}s/it".format(
-                    iteration, taco_loss, mi_loss, grad_norm, duration))
+                print("Train loss {} {:.4f} mi_loss {:.4f} Grad Norm {:.4f} "
+                      "gaf {:.4f} {:.2f}s/it".format(
+                    iteration, taco_loss, mi_loss, grad_norm, gaf, duration))
                 logger.log_training(
                     reduced_loss, grad_norm, learning_rate, duration, iteration)
 

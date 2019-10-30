@@ -82,7 +82,14 @@ def create_hparams(hparams_string=None, verbose=False):
         weight_decay=1e-6,
         grad_clip_thresh=1.0,
         batch_size=64,
-        mask_padding=True  # set model's padded outputs to padded values
+        mask_padding=True,  # set model's padded outputs to padded values
+
+        ##################################
+        # MMI options                    #
+        ##################################
+        drop_frame_rate=0.2,
+        use_mmi=True,
+        use_gaf=True
     )
 
     if hparams_string:
