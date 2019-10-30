@@ -478,13 +478,15 @@ class MIEsitmator(nn.Module):
             nn.Dropout(p=dropout)
         )
         self.ctc_proj = LinearNorm(hidden_size, vocab_size + 1, bias=True)
-        self.ctc = nn.CTCLoss(blank=vocab_size, reduction='mean')
+        self.ctc = nn.CTCLoss(blank=vocab_size, reduction='none')
 
     def forward(self, decoder_outputs, target_phones, decoder_lengths, target_lengths):
         out = self.proj(decoder_outputs)
         log_probs = self.ctc_proj(out).log_softmax(dim=2)
         log_probs = log_probs.transpose(1, 0)
         ctc_loss = self.ctc(log_probs, target_phones, decoder_lengths, target_lengths)
+        # average by number of frames since taco_loss is averaged.
+        ctc_loss = (ctc_loss / decoder_lengths.float()).mean()
         return ctc_loss
 
 
