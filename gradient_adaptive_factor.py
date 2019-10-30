@@ -3,7 +3,7 @@ import itertools
 
 
 UPDATE_GAF_EVERY_N_STEP = 10
-MAX_GAF = 10.0
+MAX_GAF = 1.0
 
 
 def grads_for_params(loss, parameters, optimizer):

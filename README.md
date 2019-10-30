@@ -1,5 +1,11 @@
 # Tacotron 2 MMI (without wavenet)
-# code for Maximizing mutual information for tacotron.
+# code for Maximizing Mutual Information for Tacotron.
+New options in hparams:
+ - use_mmi (use mmi training objective or not)
+ - use_gaf (use gradient adaptive factor or not, to keep the max norm of gradients 
+ from the taco_loss and mmi_loss approximately equal)
+ - drop_frame_rate (drop teacher-frocing input frames to a certain rate)
+                    
 
 PyTorch implementation of [Natural TTS Synthesis By Conditioning
 Wavenet On Mel Spectrogram Predictions](https://arxiv.org/pdf/1712.05884.pdf). 
