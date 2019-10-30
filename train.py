@@ -264,7 +264,8 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
                       "gaf {:.4f} {:.2f}s/it".format(
                     iteration, taco_loss, mi_loss, grad_norm, gaf, duration))
                 logger.log_training(
-                    reduced_loss, grad_norm, learning_rate, duration, iteration)
+                    reduced_loss, taco_loss, mi_loss, grad_norm, gaf,
+                    learning_rate, duration, iteration)
 
             if not is_overflow and (iteration % hparams.iters_per_checkpoint == 0):
                 validate(model, criterion, valset, iteration,
