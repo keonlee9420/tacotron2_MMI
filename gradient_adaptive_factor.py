@@ -3,7 +3,6 @@ import itertools
 
 
 UPDATE_GAF_EVERY_N_STEP = 10
-MAX_GAF = 1.0
 
 
 def grads_for_params(loss, parameters, optimizer):
@@ -39,5 +38,5 @@ def calc_grad_adapt_factor(loss1, loss2, parameters, optimizer):
     norms1 = norms1[indices]
     norms2 = norms2[indices]
 
-    # return torch.min(norms1 / norms2)
-    return min(torch.mean(norms1 / norms2), MAX_GAF)
+    return torch.min(norms1 / norms2)
+    # return torch.mean(norms1 / norms2)

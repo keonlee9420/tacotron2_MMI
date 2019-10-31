@@ -215,6 +215,7 @@ class Decoder(nn.Module):
         self.gate_threshold = hparams.gate_threshold
         self.p_attention_dropout = hparams.p_attention_dropout
         self.p_decoder_dropout = hparams.p_decoder_dropout
+        self.drop_frame_rate = hparams.drop_frame_rate
 
         self.prenet = Prenet(
             hparams.n_mel_channels * hparams.n_frames_per_step,
@@ -405,6 +406,10 @@ class Decoder(nn.Module):
         gate_outputs: gate outputs from the decoder
         alignments: sequence of attention weights from the decoder
         """
+        # mels shape (B, n_mel_channels, T_out),
+        # transpose first to apply drop frame rate on time dimension.
+        decoder_inputs = F.dropout2d(
+            decoder_inputs.transpose(1, 2), p=self.drop_frame_rate, training=self.training).transpose(1, 2)
 
         decoder_input = self.get_go_frame(memory).unsqueeze(0)
         decoder_inputs = self.parse_decoder_inputs(decoder_inputs)
@@ -447,6 +452,8 @@ class Decoder(nn.Module):
 
         decoder_outputs, mel_outputs, gate_outputs, alignments = [], [], [], []
         while True:
+            decoder_input = F.dropout2d(
+                decoder_input.unsqueeze(1), p=self.drop_frame_rate, training=self.training).squeeze(1)
             decoder_input = self.prenet(decoder_input)
             decoder_output, mel_output, gate_output, alignment = self.decode(decoder_input)
 
@@ -505,8 +512,8 @@ class Tacotron2(nn.Module):
         self.encoder = Encoder(hparams)
         self.decoder = Decoder(hparams)
         self.postnet = Postnet(hparams)
-        self.drop_frame_rate = getattr(hparams, 'drop_frame_rate', 0.2)
-        self.use_mmi = getattr(hparams, 'use_mmi', True)
+        # self.drop_frame_rate = hparams.drop_frame_rate
+        self.use_mmi = hparams.use_mmi
         if self.use_mmi:
             vocab_size = len(ctc_symbols)
             decoder_dim = hparams.decoder_rnn_dim
@@ -550,11 +557,11 @@ class Tacotron2(nn.Module):
         text_inputs, text_lengths, mels, max_len, output_lengths, *_ = inputs
         text_lengths, output_lengths = text_lengths.data, output_lengths.data
 
-        if self.drop_frame_rate > 0.:
+        # if self.drop_frame_rate > 0.:
             # mels shape (B, n_mel_channels, T_out),
             # transpose first to apply drop frame rate on time dimension.
-            mels = F.dropout2d(mels.transpose(1, 2), p=self.drop_frame_rate,
-                               training=self.training).transpose(1, 2)
+            # mels = F.dropout2d(mels.transpose(1, 2), p=self.drop_frame_rate,
+            #                    training=self.training).transpose(1, 2)
 
         embedded_inputs = self.embedding(text_inputs).transpose(1, 2)
 
@@ -582,4 +589,5 @@ class Tacotron2(nn.Module):
         outputs = self.parse_output(
             [None, mel_outputs, mel_outputs_postnet, gate_outputs, alignments])
 
-        return outputs
+        # keep the original interface
+        return outputs[1:]

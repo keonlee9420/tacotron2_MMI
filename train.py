@@ -222,11 +222,12 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
                 ctc_text, ctc_text_lengths, aco_lengths = x[-2], x[-1], x[4]
                 taco_loss = loss
                 mi_loss = model.mi(decoder_outputs, ctc_text, aco_lengths, ctc_text_lengths)
-                if getattr(hparams, 'use_gaf', True):
+                if hparams.use_gaf:
                     if i % gradient_adaptive_factor.UPDATE_GAF_EVERY_N_STEP == 0:
                         safe_loss = 0. * sum([x.sum() for x in model.parameters()])
                         gaf = gradient_adaptive_factor.calc_grad_adapt_factor(
                             taco_loss + safe_loss, mi_loss + safe_loss, model.parameters(), optimizer)
+                        gaf = min(gaf, hparams.max_gaf)
                 else:
                     gaf = 1.0
                 loss = loss + gaf * mi_loss
