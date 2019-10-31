@@ -91,7 +91,8 @@ def create_hparams(hparams_string=None, verbose=False):
         drop_frame_rate=0.2,
         use_mmi=True,
         use_gaf=True,
-        max_gaf=0.5
+        max_gaf=0.5,
+        global_mean_npy='ljspeech_global_mean.npy'
     )
 
     if hparams_string:
