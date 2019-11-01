@@ -507,7 +507,8 @@ class Tacotron2(nn.Module):
         self.drop_frame_rate = hparams.drop_frame_rate
         self.use_mmi = hparams.use_mmi
         if self.drop_frame_rate > 0.:
-            self.global_mean = hparams.global_mean
+            # global mean is not used at inference.
+            self.global_mean = getattr(hparams, 'global_mean', None)
         if self.use_mmi:
             vocab_size = len(ctc_symbols)
             decoder_dim = hparams.decoder_rnn_dim

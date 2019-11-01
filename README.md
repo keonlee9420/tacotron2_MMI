@@ -15,6 +15,13 @@ New options in hparams:
  
 This code can pick up alignment at much earlier steps than the original version.
 
+Nvidia-Tacotron2 alignment refinement
+
+![NVIDIA-Tacotron2](alignment_fig/nv.gif)
+
+This code
+
+![This code](alignment_fig/df_mi.gif)
  
  
 ---------------------------
