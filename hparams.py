@@ -9,7 +9,7 @@ def create_hparams(hparams_string=None, verbose=False):
         ################################
         # Experiment Parameters        #
         ################################
-        epochs=500,
+        epochs=50000,
         iters_per_checkpoint=1000,
         seed=1234,
         dynamic_loss_scaling=True,
@@ -25,8 +25,8 @@ def create_hparams(hparams_string=None, verbose=False):
         # Data Parameters             #
         ################################
         load_mel_from_disk=False,
-        training_files='filelists/ljs_audio_text_train_filelist.txt',
-        validation_files='filelists/ljs_audio_text_val_filelist.txt',
+        training_files='filelists/bc13_segmented_v0_d0_shorterthan10s_train_filelist_skipped.txt',
+        validation_files='filelists/bc13_segmented_v0_d0_val_filelist_skipped.txt',
         text_cleaners=['english_cleaners'],
 
         ################################
@@ -56,7 +56,7 @@ def create_hparams(hparams_string=None, verbose=False):
         n_frames_per_step=1,  # currently only 1 is supported
         decoder_rnn_dim=1024,
         prenet_dim=256,
-        max_decoder_steps=1000,
+        max_decoder_steps=2000,
         gate_threshold=0.5,
         p_attention_dropout=0.1,
         p_decoder_dropout=0.1,
@@ -92,7 +92,7 @@ def create_hparams(hparams_string=None, verbose=False):
         use_mmi=True,
         use_gaf=True,
         max_gaf=0.5,
-        global_mean_npy='ljspeech_global_mean.npy'
+        global_mean_npy='datasets/bc13_global_mean.npy'
     )
 
     if hparams_string:

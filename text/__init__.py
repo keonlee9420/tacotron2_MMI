@@ -38,6 +38,8 @@ def text_to_sequence(text, cleaner_names):
     sequence += _arpabet_to_sequence(m.group(2))
     text = m.group(3)
 
+  # Append EOS token
+  sequence.append(_symbol_to_id['~'])
   return sequence
 
 

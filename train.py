@@ -1,3 +1,8 @@
+# ignore tensorflow depreciate warnings
+# see: https://github.com/tensorflow/tensorflow/issues/27045#issuecomment-480691244
+import tensorflow as tf
+if type(tf.contrib) != type(tf): tf.contrib._warning = None
+
 import os
 import time
 import argparse
@@ -234,6 +239,22 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
         print("Epoch: {}".format(epoch))
         for i, batch in enumerate(train_loader):
             start = time.perf_counter()
+
+            if iteration < 50000:
+                learning_rate = 1e-3
+            elif iteration >= 50000 and iteration < 100000:
+                learning_rate = 5e-4
+            elif iteration >= 100000 and iteration < 150000:
+                learning_rate = 3e-4
+            elif iteration >= 150000 and iteration < 200000:
+                learning_rate = 1e-4
+            elif iteration >= 200000 and iteration < 250000:
+                learning_rate = 5e-5
+            elif iteration >= 250000 and iteration < 300000:
+                learning_rate = 3e-5
+            else:
+                learning_rate = 1e-5
+
             for param_group in optimizer.param_groups:
                 param_group['lr'] = learning_rate
 
@@ -287,20 +308,20 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
 
             if not is_overflow and rank == 0:
                 duration = time.perf_counter() - start
-                print("Train loss {} {:.4f} mi_loss {:.4f} Grad Norm {:.4f} "
-                      "gaf {:.4f} {:.2f}s/it".format(
-                    iteration, taco_loss, mi_loss, grad_norm, gaf, duration))
                 logger.log_training(
                     reduced_loss, taco_loss, mi_loss, grad_norm, gaf,
                     learning_rate, duration, iteration)
 
             if not is_overflow and (iteration % hparams.iters_per_checkpoint == 0):
+                print("Train loss {} {:.4f} mi_loss {:.4f} Grad Norm {:.4f} "
+                      "gaf {:.4f} {:.2f}s/it".format(
+                    iteration, taco_loss, mi_loss, grad_norm, gaf, duration))
                 validate(model, criterion, valset, iteration,
                          hparams.batch_size, n_gpus, collate_fn, logger,
                          hparams.distributed_run, rank)
                 if rank == 0:
                     checkpoint_path = os.path.join(
-                        output_directory, "checkpoint_{}".format(iteration))
+                        output_directory, "checkpoint_{}_{}".format(iteration, output_directory.split('/')[-1].replace('outdir_', '')))
                     save_checkpoint(model, optimizer, learning_rate, iteration,
                                     checkpoint_path)
 
