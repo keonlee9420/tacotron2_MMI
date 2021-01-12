@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 import gradient_adaptive_factor
 from model import Tacotron2
 from data_utils import TextMelLoader, TextMelCollate
-from loss_function import Tacotron2Loss
+from loss_function import Tacotron2Loss, GuidedAttentionLoss
 from logger import Tacotron2Logger
 from hparams import create_hparams
 from utils import to_gpu
@@ -67,12 +67,13 @@ def prepare_dataloaders(hparams):
     return train_loader, valset, collate_fn
 
 
-def prepare_directories_and_logger(output_directory, log_directory, rank):
+def prepare_directories_and_logger(haparms, output_directory, log_directory, rank):
     if rank == 0:
         if not os.path.isdir(output_directory):
             os.makedirs(output_directory)
             os.chmod(output_directory, 0o775)
-        logger = Tacotron2Logger(os.path.join(output_directory, log_directory))
+        logger = Tacotron2Logger(os.path.join(output_directory, log_directory), \
+            hparams.use_mmi, hparams.use_guided_attn_loss)
     else:
         logger = None
     return logger
@@ -213,9 +214,14 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
 
     criterion = Tacotron2Loss()
 
-    logger = prepare_directories_and_logger(
-        output_directory, log_directory, rank)
+    if hparams.use_guided_attn_loss:
+        criterion_attn = GuidedAttentionLoss(
+                sigma=hparams.guided_attn_loss_sigma,
+                alpha=hparams.guided_attn_loss_lambda,
+            )
 
+    logger = prepare_directories_and_logger(
+        hparams, output_directory, log_directory, rank)
 
     # Load checkpoint if one exists
     iteration = 0
@@ -263,6 +269,10 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
             y_pred = model(x)
 
             loss = criterion(y_pred, y)
+            if hparams.use_guided_attn_loss is not None:
+                alignments, ilens, olens = y_pred[-1], x[1], x[4]
+                attn_loss = criterion_attn(alignments, ilens, olens)
+                loss = loss + attn_loss
             if model.mi is not None:
                 # transpose to [b, T, dim]
                 decoder_outputs = y_pred[0].transpose(2, 1)
@@ -309,7 +319,7 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
             if not is_overflow and rank == 0:
                 duration = time.perf_counter() - start
                 logger.log_training(
-                    reduced_loss, taco_loss, mi_loss, grad_norm, gaf,
+                    reduced_loss, taco_loss, attn_loss, mi_loss, grad_norm, gaf,
                     learning_rate, duration, iteration)
 
             if not is_overflow and (iteration % hparams.iters_per_checkpoint == 0):

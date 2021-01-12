@@ -6,16 +6,21 @@ from plotting_utils import plot_gate_outputs_to_numpy
 
 
 class Tacotron2Logger(SummaryWriter):
-    def __init__(self, logdir):
+    def __init__(self, logdir, use_mmi, use_guided_attn_loss):
         super(Tacotron2Logger, self).__init__(logdir)
+        self.use_mmi = use_mmi
+        self.use_guided_attn_loss = use_guided_attn_loss
 
-    def log_training(self, total_loss, taco_loss, mi_loss, grad_norm,
+    def log_training(self, total_loss, taco_loss, attn_loss, mi_loss, grad_norm,
                      gaf, learning_rate, duration, iteration):
             self.add_scalar("training.loss", total_loss, iteration)
-            self.add_scalar("training.taco_loss", taco_loss, iteration)
-            self.add_scalar("training.mi_loss", mi_loss, iteration)
+            if self.use_guided_attn_loss:
+                self.add_scalar("training.guided_attn_loss", attn_loss, iteration)
+            if self.use_mmi:
+                self.add_scalar("training.taco_loss", taco_loss, iteration)
+                self.add_scalar("training.mi_loss", mi_loss, iteration)
+                self.add_scalar("grad.gaf", gaf, iteration)
             self.add_scalar("grad.norm", grad_norm, iteration)
-            self.add_scalar("grad.gaf", gaf, iteration)
             self.add_scalar("learning.rate", learning_rate, iteration)
             self.add_scalar("duration", duration, iteration)
 

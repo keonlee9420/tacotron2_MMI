@@ -519,6 +519,7 @@ class Tacotron2(nn.Module):
             self.mi = MIEsitmator(vocab_size, decoder_dim, decoder_dim, dropout=0.5)
         else:
             self.mi = None
+        self.use_guided_attn_loss = hparams.use_guided_attn_loss
 
     def parse_batch(self, batch):
         text_padded, input_lengths, mel_padded, gate_padded, \

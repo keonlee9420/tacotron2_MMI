@@ -86,11 +86,18 @@ def create_hparams(hparams_string=None, verbose=False):
         mask_padding=True,  # set model's padded outputs to padded values
 
         ##################################
+        # GAIN options                    #
+        ##################################
+        use_guided_attn_loss=True,
+        guided_attn_loss_sigma=0.4,
+        guided_attn_loss_lambda=1.0,
+
+        ##################################
         # MMI options                    #
         ##################################
         drop_frame_rate=0.2,
-        use_mmi=True,
-        use_gaf=True,
+        use_mmi=False,
+        use_gaf=False,
         max_gaf=0.5,
         global_mean_npy='datasets/bc13_global_mean.npy'
     )
