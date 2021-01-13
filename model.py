@@ -341,7 +341,8 @@ class Decoder(nn.Module):
             gate_outputs = gate_outputs.transpose(0, 1)
         else:
             gate_outputs = gate_outputs[None]
-        # tile gate_outputs to make frames per step
+        # tile gate_outputs to make frames per step.
+        # Or you can slice the mask while length of gate_outputs is kept as T_out/r: see https://github.com/BogiHsu/Tacotron2-PyTorch/blob/aafde3845828fc3b9df796e60607e0de67873409/model/model.py#L517
         B = gate_outputs.size(0)
         gate_outputs = gate_outputs.contiguous().view(-1, 1).repeat(1,self.n_frames_per_step).view(B, -1)
 
