@@ -324,14 +324,14 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
                     reduced_loss, taco_loss, attn_loss, mi_loss, grad_norm, gaf,
                     learning_rate, duration, iteration)
 
-            if not is_overflow and (iteration % hparams.iters_per_checkpoint == 0):
+            if not is_overflow and (iteration % hparams.iters_per_validate == 0):
                 print("Train loss {} {:.4f} mi_loss {:.4f} Grad Norm {:.4f} "
                       "gaf {:.4f} {:.2f}s/it".format(
                     iteration, taco_loss, mi_loss, grad_norm, gaf, duration))
                 validate(model, criterion, valset, iteration,
                          hparams.batch_size, n_gpus, collate_fn, logger,
                          hparams.distributed_run, rank)
-                if rank == 0:
+                if rank == 0 and (iteration % hparams.iters_per_checkpoint == 0):
                     checkpoint_path = os.path.join(
                         output_directory, "checkpoint_{}_{}".format(iteration, output_directory.split('/')[-1].replace('outdir_', '')))
                     save_checkpoint(model, optimizer, learning_rate, iteration,
