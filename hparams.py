@@ -98,7 +98,7 @@ def create_hparams(hparams_string=None, verbose=False):
         use_mmi=False,
         use_gaf=False,
         max_gaf=0.5,
-        global_mean_npy='datasets/bc13_global_mean.npy'
+        global_mean_npy='filelists/bc13_global_mean.npy'
     )
 
     if hparams_string:
