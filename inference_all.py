@@ -3,26 +3,12 @@
 import tensorflow as tf
 if type(tf.contrib) != type(tf): tf.contrib._warning = None
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pylab as plt
-
 import os
-import sys
-sys.path.append('waveglow/')
-import numpy as np
 import torch
 import argparse
 
 from hparams import create_hparams
-from model import Tacotron2
-from layers import TacotronSTFT, STFT
-from audio_processing import griffin_lim
-from train import load_model
-from text import text_to_sequence
-from scipy.io.wavfile import write
-from waveglow.denoiser import Denoiser
-from waveglow.mel2samp import files_to_list, MAX_WAV_VALUE
+from layers import TacotronSTFT
 
 from inference import synthesize, load_models
 
