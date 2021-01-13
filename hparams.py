@@ -53,7 +53,7 @@ def create_hparams(hparams_string=None, verbose=False):
         encoder_embedding_dim=512,
 
         # Decoder parameters
-        n_frames_per_step=1,  # currently only 1 is supported
+        n_frames_per_step=2,  # any n_frames_per_step is supported
         decoder_rnn_dim=1024,
         prenet_dim=256,
         max_decoder_steps=2000,
@@ -99,7 +99,7 @@ def create_hparams(hparams_string=None, verbose=False):
         use_mmi=False,
         use_gaf=False,
         max_gaf=0.5,
-        global_mean_npy='datasets/bc13_global_mean.npy'
+        global_mean_npy='datasets/bc13_global_mean_r_2.npy'
     )
 
     if hparams_string:

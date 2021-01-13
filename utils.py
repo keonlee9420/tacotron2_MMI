@@ -3,8 +3,8 @@ from scipy.io.wavfile import read
 import torch
 
 
-def get_mask_from_lengths(lengths):
-    max_len = torch.max(lengths).item()
+def get_mask_from_lengths(lengths, max_len=-1):
+    max_len = max(torch.max(lengths).item(), max_len)
     ids = torch.arange(0, max_len, out=torch.cuda.LongTensor(max_len))
     mask = (ids < lengths.unsqueeze(1))
     return mask
@@ -50,17 +50,17 @@ def make_non_pad_mask(lengths, xs=None, length_dim=-1):
     return ~make_pad_mask(lengths, xs, length_dim)
 
 
-def get_drop_frame_mask_from_lengths(lengths, drop_frame_rate):
+def get_drop_frame_mask_from_lengths(lengths, drop_frame_rate, r_len_pad):
     batch_size = lengths.size(0)
-    max_len = torch.max(lengths).item()
-    mask = get_mask_from_lengths(lengths).float()
+    max_len = torch.max(lengths).item() + r_len_pad
+    mask = get_mask_from_lengths(lengths, max_len).float()
     drop_mask = torch.empty([batch_size, max_len], device=lengths.device).uniform_(0., 1.) < drop_frame_rate
     drop_mask = drop_mask.float() * mask
     return drop_mask
 
 
-def dropout_frame(mels, global_mean, mel_lengths, drop_frame_rate):
-    drop_mask = get_drop_frame_mask_from_lengths(mel_lengths, drop_frame_rate)
+def dropout_frame(mels, global_mean, mel_lengths, drop_frame_rate, r_len_pad):
+    drop_mask = get_drop_frame_mask_from_lengths(mel_lengths, drop_frame_rate, r_len_pad)
     dropped_mels = (mels * (1.0 - drop_mask).unsqueeze(1) +
                     global_mean[None, :, None] * drop_mask.unsqueeze(1))
     return dropped_mels

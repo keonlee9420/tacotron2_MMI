@@ -163,7 +163,7 @@ def calculate_global_mean(data_loader, global_mean_npy):
     frames = []
     print('calculating global mean...')
     for i, batch in enumerate(data_loader):
-        (text_padded, input_lengths, mel_padded, gate_padded,
+        (text_padded, input_lengths, r_len_pad, mel_padded, gate_padded,
          output_lengths, ctc_text, ctc_text_lengths) = batch
         # padded values are 0.
         sums.append(mel_padded.double().sum(dim=(0, 2)))
@@ -270,13 +270,13 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
 
             loss = criterion(y_pred, y)
             if hparams.use_guided_attn_loss is not None:
-                alignments, ilens, olens = y_pred[-1], x[1], x[4]
-                attn_loss = criterion_attn(alignments, ilens, olens)
+                alignments, r_len_pad, ilens, olens = y_pred[-1], x[2], x[1], x[5]
+                attn_loss = criterion_attn(alignments, ilens, (olens+r_len_pad)//hparams.n_frames_per_step)
                 loss = loss + attn_loss
             if model.mi is not None:
                 # transpose to [b, T, dim]
                 decoder_outputs = y_pred[0].transpose(2, 1)
-                ctc_text, ctc_text_lengths, aco_lengths = x[-2], x[-1], x[4]
+                ctc_text, ctc_text_lengths, aco_lengths = x[-2], x[-1], x[5]
                 taco_loss = loss
                 mi_loss = model.mi(decoder_outputs, ctc_text, aco_lengths, ctc_text_lengths)
                 if hparams.use_gaf:
