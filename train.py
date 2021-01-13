@@ -296,10 +296,12 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
                 reduced_loss = reduce_tensor(loss.data, n_gpus).item()
                 taco_loss = reduce_tensor(taco_loss.data, n_gpus).item()
                 mi_loss = reduce_tensor(mi_loss.data, n_gpus).item()
+                attn_loss = reduce_tensor(attn_loss.data, n_gpus).item()
             else:
                 reduced_loss = loss.item()
                 taco_loss = taco_loss.item()
                 mi_loss = mi_loss.item()
+                attn_loss = attn_loss.item()
             if hparams.fp16_run:
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
                     scaled_loss.backward()
