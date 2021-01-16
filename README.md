@@ -39,7 +39,7 @@ and the Mel decoder were trained on the same mel-spectrogram representation.
 
 ## Suggestions and Tips
 1. You may remove mel_layer in decoder to lower the training loss. It is not existing in [NVIDIA/tacotron2] but in [bfs18's code](https://github.com/bfs18/tacotron2).
-2. In my experements, there was no big differences between using drop frame rate and reduction windows as described in [issue #280](https://github.com/NVIDIA/tacotron2/issues/280) especially in terms of learning alignments. But the trace of both training and validation loss are different. Specifically, using reduction windows shows more large val loss at the same training steps compared to drop frame rate. Also, training time is reduced almost by half when using reduction windows.
+2. In my experements, there was no big difference between using drop frame rate and reduction windows as described in [issue #280](https://github.com/NVIDIA/tacotron2/issues/280) especially in terms of learning alignments. But the trace of both training and validation loss are different. Specifically, using reduction windows shows more large val loss at the same training steps compared to drop frame rate. Also, training time is reduced almost by half when using reduction windows.
     - val_loss_r1_d2: val loss of using reduction windows in size 1(no reduction in frame per decoder step), and drop frame rate 0.2. ![val_loss_r1_d2](alignment_fig/val_loss_r1_d2.png)
     - val_loss_r2_d0: val loss of using reduction windows in size 2, and drop frame rate 0 (no drop frame rate).
     ![val_loss_r2_d0](alignment_fig/val_loss_r2_d0.png)
