@@ -45,6 +45,19 @@ and the Mel decoder were trained on the same mel-spectrogram representation.
     ![val_loss_r2_d0](alignment_fig/val_loss_r2_d0.png)
 3. I found another implementation from [BogiHsu](https://github.com/BogiHsu/Tacotron2-PyTorch) which also has `n_frames_per_step>1` mode. Main difference is the way to deal with the length of gate mask. You may try this too.
 
+# Citation
+
+```
+@misc{lee2021tacotron2_mmi,
+  author = {Lee, Keon},
+  title = {tacotron2_MMI},
+  year = {2021},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/keonlee9420/tacotron2_MMI}}
+}
+```
+
 ## Related repos
 [WaveGlow](https://github.com/NVIDIA/WaveGlow) Faster than real time Flow-based
 Generative Network for Speech Synthesis
